@@ -1,59 +1,54 @@
 package source
 
 import (
-	"github.com/go-clog/clog"
-
-	"github.com/Aiicy/htmlquery"
-	"github.com/henson/proxypool/pkg/models"
+	"fmt"
+	"github.com/dashengbuqi/proxypool/models"
+	"github.com/gocolly/colly"
 	"regexp"
 	"strconv"
 )
 
 //feiyi get ip from feiyiproxy.com
-func Feiyi() (result []*models.IP) {
-	clog.Info("FEIYI] start test")
-	pollURL := "http://www.feiyiproxy.com/?page_id=1457"
-	doc, _ := htmlquery.LoadURL(pollURL)
-	trNode, err := htmlquery.Find(doc, "//div[@class='et_pb_code.et_pb_module.et_pb_code_1']//div//table//tbody//tr")
-	logger.Info("[FEIYI] start up")
-	if err != nil {
-		logger.Errorf("FEIYI] parse pollUrl error %s", err.Error())
-		return
-	}
-	//debug begin
-	logger.Infof("[FEIYI] len(trNode) = %d ", len(trNode))
-	for i := 1; i < len(trNode); i++ {
-		tdNode, _ := htmlquery.Find(trNode[i], "//td")
-		ip := htmlquery.InnerText(tdNode[0])
-		port := htmlquery.InnerText(tdNode[1])
-		Type := htmlquery.InnerText(tdNode[3])
-		speed := htmlquery.InnerText(tdNode[6])
+func Feiyi() (result []*models.ProxyItem) {
+	c := colly.NewCollector()
 
-		IP := models.NewIP()
-		IP.Data = ip + ":" + port
+	// On every a element which has href attribute call callback
+	c.OnHTML(".et_pb_code_1 table", func(e *colly.HTMLElement) {
+		e.ForEach("tr", func(i int, el *colly.HTMLElement) {
+			if i > 0 {
+				rs := &models.ProxyItem{}
+				el.ForEach("td", func(i int, ele *colly.HTMLElement) {
+					switch i {
+					case 0:
+						rs.Addr = ele.Text
+					case 1:
+						rs.Port, _ = strconv.ParseInt(ele.Text, 10, 64)
+					case 3:
+						rs.Scheme = ele.Text
+					case 6:
+						rs.Speed = extractSpeed(ele.Text)
+					case 7:
+						rs.UpdatedBy = 900
+					}
+				})
+				result = append(result, rs)
+			}
+		})
+	})
+	// Before making a request print "Visiting ..."
+	c.OnRequest(func(r *colly.Request) {
+		fmt.Println("Visiting", r.URL.String())
+	})
 
-		if Type == "HTTPS" {
-			IP.Type1 = "https"
-			IP.Type2 = ""
-
-		} else if Type == "HTTP" {
-			IP.Type1 = "http"
-		}
-		IP.Speed = extractSpeed(speed)
-
-		logger.Infof("[FEIYI] ip.Data = %s,ip.Type = %s,%s ip.Speed = %d", IP.Data, IP.Type1, IP.Type2, IP.Speed)
-
-		result = append(result, IP)
-	}
-
-	logger.Info("FEIYI done.")
+	// Start scraping on https://hackerspaces.org
+	c.Visit("http://www.feiyiproxy.com/?page_id=1457")
 	return
 }
 
 func extractSpeed(oritext string) int64 {
 	reg := regexp.MustCompile(`\[1-9\]\d\*\\.\?\d\*`)
 	temp := reg.FindString(oritext)
-	if temp != "" {
+	if len(temp) > 0 {
 		speed, _ := strconv.ParseInt(temp, 10, 64)
 		return speed
 	}

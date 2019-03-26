@@ -12,8 +12,8 @@ func Run(inIpChan chan<- *models.IProxyItem) {
 	var wg sync.WaitGroup
 	log.Println("启动爬虫..")
 	funs := []func() []*models.ProxyItem{
-		source.Feiyi,
 		source.Kuaidl,
+		source.Feiyi,
 		source.IP66,
 		source.PLP,
 		source.IP89,

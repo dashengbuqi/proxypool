@@ -2,7 +2,6 @@ package gc
 
 import (
 	"fmt"
-	"github.com/dashengbuqi/proxypool/models"
 	"sync"
 	"time"
 )
@@ -18,7 +17,7 @@ func Run() {
 			select {
 			case <-t.C:
 				fmt.Println("开始执行ip回收...")
-				models.RemoveProxyItem(1)
+				//models.RemoveProxyItem(1)
 			}
 		}
 		wg.Done()

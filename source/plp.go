@@ -4,36 +4,42 @@ import (
 	"fmt"
 	"github.com/dashengbuqi/proxypool/models"
 	"github.com/gocolly/colly"
-	"regexp"
 	"strconv"
+	"time"
 )
 
-//feiyi get ip from feiyiproxy.com
-func Feiyi() (result []*models.ProxyItem) {
+func PLP() (result []*models.ProxyItem) {
 	c := colly.NewCollector()
+	c.AllowURLRevisit = false
 
 	// On every a element which has href attribute call callback
-	c.OnHTML(".et_pb_code_1 table", func(e *colly.HTMLElement) {
+	c.OnHTML(".bg .cells", func(e *colly.HTMLElement) {
 		e.ForEach("tr", func(i int, el *colly.HTMLElement) {
 			if i > 0 {
 				rs := &models.ProxyItem{}
 				el.ForEach("td", func(i int, ele *colly.HTMLElement) {
 					switch i {
-					case 0:
-						rs.Addr = ele.Text
 					case 1:
+						rs.Addr = ele.Text
+					case 2:
 						rs.Port, _ = strconv.ParseInt(ele.Text, 10, 64)
-					case 3:
-						rs.Scheme = ele.Text
-					case 6:
-						rs.Speed = extractSpeed(ele.Text)
-					case 7:
-						rs.UpdatedBy = 900
+					case 5:
+						rs.Scheme = extractScheme(ele.Text)
 					}
 				})
+				rs.Speed = -1
+				rs.UpdatedBy = time.Now().Unix()
+				fmt.Println(rs.Speed, rs.Scheme, rs.Port, rs.Addr, rs.UpdatedBy)
 				result = append(result, rs)
 			}
 		})
+	})
+
+	c.OnHTML("#listnav", func(e *colly.HTMLElement) {
+		pageUrl := e.ChildAttr("li a", "href")
+
+		c.Visit(e.Request.AbsoluteURL(pageUrl))
+
 	})
 	// Before making a request print "Visiting ..."
 	c.OnRequest(func(r *colly.Request) {
@@ -41,16 +47,13 @@ func Feiyi() (result []*models.ProxyItem) {
 	})
 
 	// Start scraping on https://hackerspaces.org
-	c.Visit("http://www.feiyiproxy.com/?page_id=1457")
+	c.Visit("https://list.proxylistplus.com/Fresh-HTTP-Proxy-List-1")
 	return
 }
 
-func extractSpeed(oritext string) int64 {
-	reg := regexp.MustCompile(`[0-9]\d*\.[0-9]\d*`)
-	temp := reg.FindString(oritext)
-	if len(temp) > 0 {
-		speed, _ := strconv.ParseInt(temp, 10, 64)
-		return speed
+func extractScheme(str string) string {
+	if len(str) == 2 {
+		return "HTTP"
 	}
-	return -1
+	return "HTTPS"
 }

@@ -1,12 +1,14 @@
 package models
 
 import (
+	"encoding/hex"
 	"errors"
 	"fmt"
 	"github.com/bitly/go-simplejson"
 	"github.com/dashengbuqi/proxypool/persistence"
 	"github.com/parnurzeal/gorequest"
 	"gopkg.in/mgo.v2/bson"
+	"math/rand"
 	"strconv"
 	"sync"
 	"time"
@@ -18,6 +20,7 @@ const (
 )
 
 type ProxyItem struct {
+	Id        []byte `bson:"_id"`
 	Addr      string `json:"addr"`
 	Scheme    string `json:"scheme"`
 	Port      int64  `json:"port"`
@@ -40,9 +43,50 @@ type MongodbProxyItem struct {
 	mu    sync.RWMutex
 }
 
-/*func RandomProxy() *ProxyItem  {
+func RandomProxy() *ProxyItem {
+	query := bson.M{"speed": bson.M{"$lt": 1000}}
 
-}*/
+	var result []*ProxyItem
+	err := persistence.FindAll(DATABASE, COLLECTION, query, nil, &result)
+	if err != nil {
+		return nil
+	}
+	ips := len(result)
+	rand.Seed(time.Now().UnixNano())
+	randomNum := rand.Intn(ips)
+
+	return result[randomNum]
+}
+
+func RandomHttpProxy() *ProxyItem {
+	query := bson.M{"scheme": "http", "speed": bson.M{"$lt": 1000}}
+
+	var result []*ProxyItem
+	err := persistence.FindAll(DATABASE, COLLECTION, query, nil, &result)
+	if err != nil {
+		return nil
+	}
+	ips := len(result)
+	rand.Seed(time.Now().UnixNano())
+	randomNum := rand.Intn(ips)
+
+	return result[randomNum]
+}
+
+func RandomHttpsProxy() *ProxyItem {
+	query := bson.M{"scheme": "https", "speed": bson.M{"$lt": 1000}}
+
+	var result []*ProxyItem
+	err := persistence.FindAll(DATABASE, COLLECTION, query, nil, &result)
+	if err != nil {
+		return nil
+	}
+	ips := len(result)
+	rand.Seed(time.Now().UnixNano())
+	randomNum := rand.Intn(ips)
+
+	return result[randomNum]
+}
 
 //检查代理速度
 func (m *MongodbProxyItem) CheckSpeedAndUpdate() {
@@ -143,5 +187,32 @@ func testIPSpeed(item *ProxyItem) (int64, bool) {
 }
 
 func (m *MongodbProxyItem) UpdateOrInsert() error {
+	return nil
+}
+
+//删除指定时间内的数据
+func RemoveProxyItem(day int) error {
+	currentTime := time.Now()
+
+	oldTime := currentTime.AddDate(0, 0, -day)
+
+	//检查ip，端口是否存在
+	query := bson.M{"updatedby": oldTime}
+
+	var result []*ProxyItem
+
+	err := persistence.FindAll(DATABASE, COLLECTION, query, nil, &result)
+
+	if err != nil {
+		fmt.Printf(err.Error())
+		return err
+	} else {
+		for _, v := range result {
+			delErr := persistence.Remove(DATABASE, COLLECTION, bson.M{"_id": bson.ObjectIdHex(hex.EncodeToString(v.Id))})
+			if delErr != nil {
+				fmt.Printf("IP回收失败, " + delErr.Error())
+			}
+		}
+	}
 	return nil
 }

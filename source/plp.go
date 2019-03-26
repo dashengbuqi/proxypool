@@ -53,7 +53,7 @@ func PLP() (result []*models.ProxyItem) {
 
 func extractScheme(str string) string {
 	if len(str) == 2 {
-		return "HTTP"
+		return "http"
 	}
-	return "HTTPS"
+	return "https"
 }

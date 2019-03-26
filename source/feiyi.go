@@ -6,6 +6,7 @@ import (
 	"github.com/gocolly/colly"
 	"regexp"
 	"strconv"
+	"strings"
 )
 
 //feiyi get ip from feiyiproxy.com
@@ -24,7 +25,7 @@ func Feiyi() (result []*models.ProxyItem) {
 					case 1:
 						rs.Port, _ = strconv.ParseInt(ele.Text, 10, 64)
 					case 3:
-						rs.Scheme = ele.Text
+						rs.Scheme = strings.ToLower(ele.Text)
 					case 6:
 						rs.Speed = extractSpeed(ele.Text)
 					case 7:

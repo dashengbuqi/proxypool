@@ -5,6 +5,7 @@ import (
 	"github.com/dashengbuqi/proxypool/models"
 	"github.com/gocolly/colly"
 	"strconv"
+	"strings"
 	"time"
 )
 
@@ -24,7 +25,7 @@ func Kuaidl() (result []*models.ProxyItem) {
 					case 1:
 						rs.Port, _ = strconv.ParseInt(ele.Text, 10, 64)
 					case 3:
-						rs.Scheme = ele.Text
+						rs.Scheme = strings.ToLower(ele.Text)
 					case 5:
 						rs.Speed = extractSpeed(ele.Text)
 					case 6:

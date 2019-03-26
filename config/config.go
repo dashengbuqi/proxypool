@@ -1,6 +1,7 @@
 package config
 
 import (
+	"github.com/dashengbuqi/proxypool/helper"
 	"github.com/go-ini/ini"
 	"github.com/kataras/golog"
 	"os"
@@ -33,7 +34,7 @@ type Context struct {
 
 var (
 	globalConfigure *Context
-	logger          *golog.Logger
+	logger          = golog.Default
 )
 
 func NewContext() *Context {
@@ -46,7 +47,8 @@ func NewContext() *Context {
 	if err != nil {
 		logger.Fatalf("Fail to get work directory: %v", err.Error())
 	}
-	iniFile := path.Join(workDir, "ini/app.ini")
+
+	iniFile := path.Join(workDir, "config/ini/app.ini")
 
 	conf, err := ini.Load(iniFile)
 	if err != nil {
@@ -84,8 +86,11 @@ func NewContext() *Context {
 func Setting(cField string) interface{} {
 	context := NewContext()
 
-	t := reflect.TypeOf(context)
-	v := reflect.ValueOf(context)
+	t := reflect.TypeOf(*context)
+	v := reflect.ValueOf(*context)
+
+	logger.Info(t.NumField())
+	logger.Info(v)
 
 	var fields = make(map[string]interface{})
 
@@ -93,7 +98,7 @@ func Setting(cField string) interface{} {
 		fields[t.Field(i).Name] = v.Field(i).Interface()
 	}
 
-	if _, ok := fields[cField]; ok {
+	if _, ok := fields[cField]; ok == true {
 		return fields[cField]
 	}
 	return nil
@@ -105,16 +110,12 @@ func workDir(ap string) (string, error) {
 		return wd, nil
 	}
 
-	lastPathChr := strings.LastIndex(ap, "/")
-	if lastPathChr == -1 {
-		return ap, nil
-	}
-	return ap[:lastPathChr], nil
+	return ap + "/proxypool", nil
 }
 
 func appPath() string {
 
-	appPath, err := findPath()
+	appPath, err := helper.GetCurrentPath()
 	if err != nil {
 		logger.Fatalf("Fail find Application Path:%v\n", err)
 	}

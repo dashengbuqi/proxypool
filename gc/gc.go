@@ -11,7 +11,7 @@ import (
 func Run() {
 	var wg sync.WaitGroup
 
-	ticker := time.NewTicker(time.Second * 5)
+	ticker := time.NewTicker(time.Hour * 24)
 	wg.Add(1)
 	go func(t *time.Ticker) {
 		for {

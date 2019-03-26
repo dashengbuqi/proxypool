@@ -34,7 +34,11 @@ func Run() {
 func ProxyHander(w http.ResponseWriter, r *http.Request) {
 	if r.Method == "GET" {
 		w.Header().Set("content-type", "application/json")
-		b, err := json.Marshal(models.RandomProxy())
+		pi := models.RandomProxy()
+		if pi == nil {
+			return
+		}
+		b, err := json.Marshal(pi)
 		if err != nil {
 			return
 		}
@@ -45,7 +49,11 @@ func ProxyHander(w http.ResponseWriter, r *http.Request) {
 func FindHttpHandler(w http.ResponseWriter, r *http.Request) {
 	if r.Method == "GET" {
 		w.Header().Set("content-type", "application/json")
-		b, err := json.Marshal(models.RandomHttpProxy())
+		pi := models.RandomHttpProxy()
+		if pi == nil {
+			return
+		}
+		b, err := json.Marshal(pi)
 		if err != nil {
 			return
 		}
@@ -58,7 +66,11 @@ func FindHttpHandler(w http.ResponseWriter, r *http.Request) {
 func FindHttpsHandler(w http.ResponseWriter, r *http.Request) {
 	if r.Method == "GET" {
 		w.Header().Set("content-type", "application/json")
-		b, err := json.Marshal(models.RandomHttpsProxy())
+		pi := models.RandomHttpsProxy()
+		if pi == nil {
+			return
+		}
+		b, err := json.Marshal(pi)
 		if err != nil {
 			return
 		}

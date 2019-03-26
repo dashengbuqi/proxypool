@@ -52,6 +52,9 @@ func RandomProxy() *ProxyItem {
 		return nil
 	}
 	ips := len(result)
+	if ips == 0 {
+		return nil
+	}
 	rand.Seed(time.Now().UnixNano())
 	randomNum := rand.Intn(ips)
 

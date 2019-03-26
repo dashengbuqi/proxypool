@@ -19,7 +19,7 @@ const (
 )
 
 type ProxyItem struct {
-	Id        bson.ObjectId `bson:"_id"`
+	Id        bson.ObjectId `json:"id" "bson:"_id"`
 	Addr      string        `json:"addr"`
 	Scheme    string        `json:"scheme"`
 	Port      int64         `json:"port"`
@@ -210,6 +210,7 @@ func RemoveProxyItem(day int) error {
 		return err
 	} else {
 		for _, v := range result {
+
 			delErr := persistence.Remove(DATABASE, COLLECTION, bson.M{"_id": v.Id})
 			if delErr != nil {
 				fmt.Printf("IP回收失败, " + delErr.Error())

@@ -40,6 +40,10 @@ type MongodbProxyItem struct {
 	mu    sync.RWMutex
 }
 
+/*func RandomProxy() *ProxyItem  {
+
+}*/
+
 //检查代理速度
 func (m *MongodbProxyItem) CheckSpeedAndUpdate() {
 	m.mu.RLock()

@@ -1,7 +1,6 @@
 package models
 
 import (
-	"encoding/hex"
 	"errors"
 	"fmt"
 	"github.com/bitly/go-simplejson"
@@ -20,12 +19,12 @@ const (
 )
 
 type ProxyItem struct {
-	Id        []byte `bson:"_id"`
-	Addr      string `json:"addr"`
-	Scheme    string `json:"scheme"`
-	Port      int64  `json:"port"`
-	Speed     int64  `json:"speed"`
-	UpdatedBy int64  `json:"updated_by"`
+	Id        bson.ObjectId `bson:"_id"`
+	Addr      string        `json:"addr"`
+	Scheme    string        `json:"scheme"`
+	Port      int64         `json:"port"`
+	Speed     int64         `json:"speed"`
+	UpdatedBy int64         `json:"updated_by"`
 }
 
 type IProxyItem interface {
@@ -211,7 +210,7 @@ func RemoveProxyItem(day int) error {
 		return err
 	} else {
 		for _, v := range result {
-			delErr := persistence.Remove(DATABASE, COLLECTION, bson.M{"_id": bson.ObjectIdHex(hex.EncodeToString(v.Id))})
+			delErr := persistence.Remove(DATABASE, COLLECTION, bson.M{"_id": v.Id})
 			if delErr != nil {
 				fmt.Printf("IP回收失败, " + delErr.Error())
 			}

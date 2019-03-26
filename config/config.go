@@ -110,7 +110,7 @@ func workDir(ap string) (string, error) {
 		return wd, nil
 	}
 
-	return ap + "/proxypool", nil
+	return ap, nil
 }
 
 func appPath() string {

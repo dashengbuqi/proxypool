@@ -147,6 +147,7 @@ func (item *ProxyItem) updateItem(old *ProxyItem) error {
 }
 
 func (item *ProxyItem) insertItem() error {
+	item.Id = bson.NewObjectId()
 	err := persistence.Insert(DATABASE, COLLECTION, item)
 	if err != nil {
 		return err

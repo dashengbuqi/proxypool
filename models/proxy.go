@@ -19,12 +19,11 @@ const (
 )
 
 type ProxyItem struct {
-	Id        bson.ObjectId `json:"id" "bson:"_id"`
-	Addr      string        `json:"addr"`
-	Scheme    string        `json:"scheme"`
-	Port      int64         `json:"port"`
-	Speed     int64         `json:"speed"`
-	UpdatedBy int64         `json:"updated_by"`
+	Addr      string `json:"addr"`
+	Scheme    string `json:"scheme"`
+	Port      int64  `json:"port"`
+	Speed     int64  `json:"speed"`
+	UpdatedBy int64  `json:"updated_by"`
 }
 
 type IProxyItem interface {
@@ -69,6 +68,9 @@ func RandomHttpProxy() *ProxyItem {
 		return nil
 	}
 	ips := len(result)
+	if ips == 0 {
+		return nil
+	}
 	rand.Seed(time.Now().UnixNano())
 	randomNum := rand.Intn(ips)
 
@@ -84,6 +86,10 @@ func RandomHttpsProxy() *ProxyItem {
 		return nil
 	}
 	ips := len(result)
+
+	if ips == 0 {
+		return nil
+	}
 	rand.Seed(time.Now().UnixNano())
 	randomNum := rand.Intn(ips)
 
@@ -147,7 +153,6 @@ func (item *ProxyItem) updateItem(old *ProxyItem) error {
 }
 
 func (item *ProxyItem) insertItem() error {
-	item.Id = bson.NewObjectId()
 	err := persistence.Insert(DATABASE, COLLECTION, item)
 	if err != nil {
 		return err
@@ -194,7 +199,7 @@ func (m *MongodbProxyItem) UpdateOrInsert() error {
 }
 
 //删除指定时间内的数据
-func RemoveProxyItem(day int) error {
+/*func RemoveProxyItem(day int) error {
 	currentTime := time.Now()
 
 	oldTime := currentTime.AddDate(0, 0, -day)
@@ -219,4 +224,4 @@ func RemoveProxyItem(day int) error {
 		}
 	}
 	return nil
-}
+}*/

@@ -16,6 +16,7 @@ func Run(inIpChan chan<- *models.IProxyItem) {
 		source.Kuaidl,
 		source.IP66,
 		source.PLP,
+		source.IP89,
 	}
 
 	for _, f := range funs {

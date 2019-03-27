@@ -199,15 +199,25 @@ func (m *MongodbProxyItem) UpdateOrInsert() error {
 }
 
 //删除指定时间内的数据
-/*func RemoveProxyItem(day int) error {
-	currentTime := time.Now()
-
-	oldTime := currentTime.AddDate(0, 0, -day)
+func RemoveProxyItem() error {
+	tenAgoTime := time.Now().Add(-time.Minute * 10)
 
 	//检查ip，端口是否存在
-	query := bson.M{"updatedby": oldTime}
 
-	var result []*ProxyItem
+	//query := bson.M{"$or":[{"speed":bson.M{"$gt": 1000}},{"updatedby":}]}
+
+	query := bson.M{"$or": []bson.M{bson.M{"$gt": 1000}, bson.M{"updated_by": tenAgoTime}}}
+
+	type tempProxyItem struct {
+		Id        bson.ObjectId `json:"id" bson:"_id"`
+		Addr      string        `json:"addr"`
+		Scheme    string        `json:"scheme"`
+		Port      int64         `json:"port"`
+		Speed     int64         `json:"speed"`
+		UpdatedBy int64         `json:"updated_by"`
+	}
+
+	var result []*tempProxyItem
 
 	err := persistence.FindAll(DATABASE, COLLECTION, query, nil, &result)
 
@@ -216,7 +226,7 @@ func (m *MongodbProxyItem) UpdateOrInsert() error {
 		return err
 	} else {
 		for _, v := range result {
-
+			fmt.Println(v.Id)
 			delErr := persistence.Remove(DATABASE, COLLECTION, bson.M{"_id": v.Id})
 			if delErr != nil {
 				fmt.Printf("IP回收失败, " + delErr.Error())
@@ -224,4 +234,4 @@ func (m *MongodbProxyItem) UpdateOrInsert() error {
 		}
 	}
 	return nil
-}*/
+}

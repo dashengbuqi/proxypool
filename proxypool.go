@@ -3,6 +3,7 @@ package main
 import (
 	"github.com/dashengbuqi/proxypool/consumer"
 	"github.com/dashengbuqi/proxypool/crawl"
+	"github.com/dashengbuqi/proxypool/gc"
 	"github.com/dashengbuqi/proxypool/http"
 	"github.com/dashengbuqi/proxypool/models"
 	"runtime"
@@ -23,11 +24,11 @@ func main() {
 	}()
 
 	//IP回收
-	/*wg.Add(1)
+	wg.Add(1)
 	go func() {
 		gc.Run()
 		wg.Done()
-	}()*/
+	}()
 
 	proxyIPChan := make(chan *models.IProxyItem, 1000)
 

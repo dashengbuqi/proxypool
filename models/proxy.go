@@ -23,7 +23,7 @@ type ProxyItem struct {
 	Scheme    string `json:"scheme"`
 	Port      int64  `json:"port"`
 	Speed     int64  `json:"speed"`
-	UpdatedBy int64  `json:"updated_by"`
+	UpdatedBy int64  `json:"updated_by" bson:"updated_by"`
 }
 
 type IProxyItem interface {
@@ -200,13 +200,13 @@ func (m *MongodbProxyItem) UpdateOrInsert() error {
 
 //删除指定时间内的数据
 func RemoveProxyItem() error {
-	tenAgoTime := time.Now().Add(-time.Minute * 10)
+	tenAgoTime := time.Now().Add(-time.Minute * 5).Unix()
 
 	//检查ip，端口是否存在
 
 	//query := bson.M{"$or":[{"speed":bson.M{"$gt": 1000}},{"updatedby":}]}
 
-	query := bson.M{"$or": []bson.M{bson.M{"$gt": 1000}, bson.M{"updated_by": tenAgoTime}}}
+	query := bson.M{"$or": []bson.M{bson.M{"speed": bson.M{"$gt": 1000}}, bson.M{"updated_by": bson.M{"$lt": tenAgoTime}}}}
 
 	type tempProxyItem struct {
 		Id        bson.ObjectId `json:"id" bson:"_id"`
@@ -232,6 +232,7 @@ func RemoveProxyItem() error {
 				fmt.Printf("IP回收失败, " + delErr.Error())
 			}
 		}
+		fmt.Printf("成功回收了%d条代理IP", len(result))
 	}
 	return nil
 }

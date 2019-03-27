@@ -200,7 +200,7 @@ func (m *MongodbProxyItem) UpdateOrInsert() error {
 
 //删除指定时间内的数据
 func RemoveProxyItem() error {
-	tenAgoTime := time.Now().Add(-time.Minute * 5).Unix()
+	tenAgoTime := time.Now().AddDate(0, 0, -1).Unix()
 
 	//检查ip，端口是否存在
 
